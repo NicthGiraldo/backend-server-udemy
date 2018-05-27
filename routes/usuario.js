@@ -1,6 +1,58 @@
 var express = require('express');
 var app = express();
+var bcrypt = require('bcryptjs');
 var Usuario = require('../models/usuario')
+
+// ==========================================
+// obtener todos los usuarios
+// ==========================================
+app.put('/:id', (req, res) => {
+
+    var id = req.params.id
+    var body = req.body;
+
+    Usuario.findById(id, (err, usuario) => {
+        if (err) {
+            return res.status(500).json({
+                ok: false,
+                mensaje: 'Error al buscar usuario',
+                errors: err
+            });
+        }
+
+        if (!usuario) {
+            return res.status(400).json({
+                ok: false,
+                mensaje: 'el usuario con el id ' + id + ' no existe',
+                errors: err
+            });
+        }
+
+        usuario.nombre = body.nombre;
+        usuario.email = body.email;
+        usuario.role = body.role;
+
+        usuario.save((err, usuarioGuardado) => {
+
+            if (err) {
+                return res.status(400).json({
+                    ok: false,
+                    mensaje: 'Error al actualizar usuario',
+                    errors: err
+                });
+            }
+
+            usuarioGuardado.password = ':v' // se mostrar esto como la contraseña, pero solo es en la respuesta del guardado
+
+            res.status(200).json({
+                ok: true,
+                usuario: usuarioGuardado
+            });
+
+        });
+
+    });
+});
 
 // ==========================================
 // obtener todos los usuarios
@@ -36,7 +88,7 @@ app.post('/', (req, res) => {
     var usuario = new Usuario({
         nombre: body.nombre,
         email: body.email,
-        password: body.password,
+        password: bcrypt.hashSync(body.password, 10),
         img: body.img,
         role: body.role
     });
@@ -52,7 +104,7 @@ app.post('/', (req, res) => {
 
         res.status(201).json({
             ok: true,
-            usuario: usuario
+            usuario: usuarioGuardado
         });
 
     });

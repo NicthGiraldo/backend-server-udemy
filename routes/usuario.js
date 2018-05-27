@@ -28,6 +28,7 @@ app.get('/', (req, res, next) => {
 // ==========================================
 // crear un nuevo usuarios 
 // ==========================================
+// npm install mongoose-unique-validator --save =========== para las validaciones de correo
 app.post('/', (req, res) => {
 
     var body = req.body;
@@ -42,7 +43,7 @@ app.post('/', (req, res) => {
 
     usuario.save((err, usuarioGuardado) => {
         if (err) {
-            return res.status(500).json({
+            return res.status(400).json({
                 ok: false,
                 mensaje: 'Error al crear usuario',
                 errors: err

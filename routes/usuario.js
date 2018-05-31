@@ -3,10 +3,36 @@ var app = express();
 var bcrypt = require('bcryptjs');
 var Usuario = require('../models/usuario')
 
+var jwt = require('jsonwebtoken');
+var mdAutenticacion = require('../middlewares/autenticacion');
+
 // ==========================================
 // obtener todos los usuarios
 // ==========================================
-app.put('/:id', (req, res) => {
+app.get('/', (req, res, next) => {
+
+    Usuario.find({}, 'nombre email img role').exec(
+        (err, usuarios) => {
+            if (err) {
+                return res.status(500).json({
+                    ok: false,
+                    mensaje: 'Error cargando usuarios',
+                    errors: err
+                });
+            }
+
+            res.status(200).json({
+                ok: true,
+                usuarios: usuarios
+            });
+
+        });
+});
+
+// ==========================================
+// actualizar un usuario
+// ==========================================
+app.put('/:id', mdAutenticacion.verificaToken, (req, res) => {
 
     var id = req.params.id
     var body = req.body;
@@ -55,33 +81,10 @@ app.put('/:id', (req, res) => {
 });
 
 // ==========================================
-// obtener todos los usuarios
-// ==========================================
-app.get('/', (req, res, next) => {
-
-    Usuario.find({}, 'nombre email img role').exec(
-        (err, usuarios) => {
-            if (err) {
-                return res.status(500).json({
-                    ok: false,
-                    mensaje: 'Error cargando usuarios',
-                    errors: err
-                });
-            }
-
-            res.status(200).json({
-                ok: true,
-                usuarios: usuarios
-            });
-
-        });
-});
-
-// ==========================================
 // crear un nuevo usuarios 
 // ==========================================
 // npm install mongoose-unique-validator --save =========== para las validaciones de correo
-app.post('/', (req, res) => {
+app.post('/', mdAutenticacion.verificaToken, (req, res) => {
 
     var body = req.body;
 
@@ -104,7 +107,8 @@ app.post('/', (req, res) => {
 
         res.status(201).json({
             ok: true,
-            usuario: usuarioGuardado
+            usuario: usuarioGuardado,
+            usuariotoken: req.usuario
         });
 
     });
@@ -114,7 +118,7 @@ app.post('/', (req, res) => {
 // ==========================================
 // borrar un usuario
 // ==========================================
-app.delete('/:id', (req, res) => {
+app.delete('/:id', mdAutenticacion.verificaToken, (req, res) => {
 
     var id = req.params.id;
 

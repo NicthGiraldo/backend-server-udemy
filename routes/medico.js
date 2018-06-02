@@ -8,8 +8,12 @@ var mdAutenticacion = require('../middlewares/autenticacion');
 // obtener todos los medicos
 // ==========================================
 app.get('/', (req, res, next) => {
+
+    var desde = req.query.desde || 0;
+    desde = Number(desde);
+
     // con find({}) se muestra toda la informacion, es como un select * from
-    Medico.find({}).exec(
+    Medico.find({}).populate('usuario', 'nombre email').limit(5).skip(desde).populate('hospital').exec(
         (err, medicos) => {
             if (err) {
                 return res.status(500).json({
@@ -19,9 +23,12 @@ app.get('/', (req, res, next) => {
                 });
             }
 
-            res.status(200).json({
-                ok: true,
-                medicos: medicos
+            Medico.count({}, (err, conteo) => {
+                res.status(200).json({
+                    ok: true,
+                    medicos: medicos,
+                    total: conteo
+                });
             });
 
         });

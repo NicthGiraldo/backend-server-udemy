@@ -10,8 +10,14 @@ var mdAutenticacion = require('../middlewares/autenticacion');
 // obtener todos los usuarios
 // ==========================================
 app.get('/', (req, res, next) => {
+    // el "limit()" limita la cantidad de usuarios que se quieren mostrar
+    // "req.query.desde || 0" con esto guardamos la variable "desde" que deberia traer el req pero,
+    // decimos que si no trae nada la iguale a cero ya que siempre se necesita un numero 
+    var desde = req.query.desde || 0;
+    desde = Number(desde); // si el usuario digita una letra el codigo rebientaria
 
-    Usuario.find({}, 'nombre email img role').exec(
+    // con "skip(desde)" estamos diciendo que comience desde la posicion que se ingrese en la variable desde
+    Usuario.find({}, 'nombre email img role').limit(5).skip(desde).exec(
         (err, usuarios) => {
             if (err) {
                 return res.status(500).json({
@@ -20,10 +26,14 @@ app.get('/', (req, res, next) => {
                     errors: err
                 });
             }
+            // "count" cuenta todos los registros, pero se puede limitar entre las llaves
+            Usuario.count({}, (err, conteo) => {
+                res.status(200).json({
+                    ok: true,
+                    usuarios: usuarios,
+                    total: conteo
+                });
 
-            res.status(200).json({
-                ok: true,
-                usuarios: usuarios
             });
 
         });

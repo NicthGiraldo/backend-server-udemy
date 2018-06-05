@@ -20,6 +20,8 @@ var hospitalRoutes = require('./routes/hospital')
 var medicoRoutes = require('./routes/medico')
 var busquedaRoutes = require('./routes/busqueda')
 
+var uploadRoutes = require('./routes/upload')
+
 // conexion a la base de datos
 mongoose.connection.openUri('mongodb://localhost:27017/hospitalDB', (err, res) => {
     if (err) throw err; // si existe algun erro para todos los procesos
@@ -27,6 +29,7 @@ mongoose.connection.openUri('mongodb://localhost:27017/hospitalDB', (err, res) =
 });
 
 // rutas
+app.use('/upload', uploadRoutes);
 app.use('/usuario', usuarioRoutes);
 app.use('/medico', medicoRoutes);
 app.use('/busqueda', busquedaRoutes);

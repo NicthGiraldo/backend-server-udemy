@@ -5,7 +5,50 @@ var Hospital = require('../models/hospital');
 var Medico = require('../models/medico');
 var Usuario = require('../models/usuario');
 
-// buscar todo 
+//===========================================
+// busqueda especifica
+//===========================================
+
+app.get('/coleccion/:tabla/:busqueda', (req, res) => {
+
+    var busqueda = req.params.busqueda;
+    var tabla = req.params.tabla;
+    var exRe = new RegExp(busqueda, 'i');
+
+    var promesa;
+
+    switch (tabla) {
+        case 'usuarios':
+            promesa = buscarUsuarios(busqueda, exRe);
+            break;
+        case 'medicos':
+            promesa = buscarMedicos(busqueda, exRe);
+            break;
+        case 'hospitales':
+            promesa = buscarHospitales(busqueda, exRe);
+            break;
+        default:
+            return res.status(400).json({
+                ok: false,
+                mensaje: 'solo se reciben como parametros de busqueda usuarios, medicos y hospitales',
+                error: { message: 'tipo de tabla/coleccion no valida' }
+            });
+    }
+
+    promesa.then(data => {
+        res.status(200).json({
+            ok: true,
+            [tabla]: data
+        });
+    })
+
+
+});
+
+//===========================================
+// busqueda general
+//===========================================
+
 app.get('/todo/:busqueda', (req, res, next) => {
 
     var busqueda = req.params.busqueda;
@@ -57,7 +100,7 @@ function buscarMedicos(busqueda, exRe) {
     // se crea y retorna una promesa 
     return new Promise((resolve, reject) => {
 
-        Hospital.find({ nombre: exRe })
+        Medico.find({ nombre: exRe })
             .populate('usuario', 'nombre email')
             .populate('hospital')
             .exec(
